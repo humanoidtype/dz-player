@@ -1,0 +1,17 @@
+node_modules/
+dist/
+build/
+*.apk
+.env
+.env.*
+!.env.example
+server/data/*.db
+server/data/*.db-journal
+android/
+ios/
+.DS_Store
+*.log
+coverage/
+.vite/
+
+prerequisites/

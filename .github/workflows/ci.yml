@@ -1,0 +1,56 @@
+name: ci
+on:
+  push:
+    branches: [main, dev]
+  pull_request: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test --workspaces
+      - run: npm run build
+
+  build-apk:
+    needs: check
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - run: npm run build -w client
+      - run: npx cap sync android
+      - run: cd android && ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dz-player-apk
+          path: android/app/build/outputs/apk/debug/*.apk
+
+  release:
+    needs: build-apk
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: dz-player-apk
+          path: .
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: '*.apk'
+          tag_name: v0.1.${{ github.run_number }}-beta

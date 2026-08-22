@@ -1,0 +1,50 @@
+/*globals.css*/
+import "tailwindcss";
+
+@theme {
+  --color-bg: #000000;
+  --color-surface: #121212;
+  --color-card: #3A3A3A;
+  --color-card-pressed: #2D2D2D;
+  --color-input: #2D2D2D;
+  --color-mini-player: #3A3A3A;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B0B0B0;
+  --color-text-tertiary: #888888;
+  --color-accent: #9B00FF;
+  --color-accent-pressed: #7B00CC;
+  --color-border: #2A2A2A;
+}
+
+@media (prefers-color-scheme: light) {
+  @theme {
+    --color-bg: #F5F5F5;
+    --color-surface: #FFFFFF;
+    --color-card: #E8E8E8;
+    --color-card-pressed: #D8D8D8;
+    --color-input: #E0E0E0;
+    --color-mini-player: #E0E0E0;
+    --color-text-primary: #0A0A0A;
+    --color-text-secondary: #555555;
+    --color-text-tertiary: #777777;
+    --color-accent: #7B00CC;
+    --color-accent-pressed: #5A0099;
+    --color-border: #DDDDDD;
+    --color-scrim: rgba(0,0,0,0.3);
+  }
+}
+
+@layer utilities {
+  .bg-bg { background-color: var(--color-bg); }
+  .bg-surface { background-color: var(--color-surface); }
+  .bg-card { background-color: var(--color-card); }
+  .bg-card-pressed { background-color: var(--color-card-pressed); }
+  .bg-input { background-color: var(--color-input); }
+  .bg-mini-player { background-color: var(--color-mini-player); }
+  .text-text-primary { color: var(--color-text-primary); }
+  .text-text-secondary { color: var(--color-text-secondary); }
+  .text-text-tertiary { color: var(--color-text-tertiary); }
+  .bg-accent { background-color: var(--color-accent); }
+  .bg-accent-pressed { background-color: var(--color-accent-pressed); }
+  .border-border { border-color: var(--color-border); }
+}
