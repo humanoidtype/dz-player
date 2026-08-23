@@ -1,7 +1,7 @@
 // client/src/features/player/ui/Controls.tsx
 import React from 'react';
-import { Media } from '../../entities/media/types';
-import { formatTime } from '../../shared/lib/formatTime';
+import { Media } from '../../../entities/media/types';
+import { formatTime } from '../../../shared/lib/formatTime';
 
 export interface ControlsProps {
   media: Media;

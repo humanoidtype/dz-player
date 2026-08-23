@@ -1,15 +1,11 @@
 import { config } from '../config.js';
-import Database from 'better-sqlite3';
+import { cachePrepare } from '../db/index.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { encryptCookies, decryptCookies } from './cookieManager.js';
 
-const cacheDb = new Database('server/data/cache.db');
-
-async function ytDlp(cmd: string[], input?: string): Promise<string> {
+async function ytDlp(cmd: string[]): Promise<string> {
   const exec = promisify(execFile);
-  const result = await exec('yt-dlp', [...cmd, ...(input ? ['-', '--flat-playlist'] : [])], {
-    input,
+  const result = await exec('yt-dlp', cmd, {
     timeout: 120_000, // 2 menit per stream resolve
     maxBuffer: 1024 * 1024 * 1024,
     env: { ...process.env, LC_ALL: 'C', LANG: 'C' },
@@ -22,7 +18,9 @@ export async function resolveStreamUrl(videoId: string, quality: '360p' | '720p'
   const now = Date.now();
 
   // Cek cache dulu
-  const cached = cacheDb.prepare('SELECT * FROM yt_cache WHERE key = ?').get(cacheKey);
+  const cached = cachePrepare('SELECT * FROM yt_cache WHERE key = ?').get(cacheKey) as
+    | { json: string; expires_at: number }
+    | undefined;
   if (cached && cached.expires_at > now) {
     return JSON.parse(cached.json) as { streamUrl: string; expiresAt: number; durationSec: number };
   }
@@ -41,7 +39,7 @@ export async function resolveStreamUrl(videoId: string, quality: '360p' | '720p'
   const durationSec = info.duration ? Math.round(info.duration) : 0;
 
   // Cache result
-  cacheDb.prepare('INSERT OR REPLACE INTO yt_cache (key, json, expires_at) VALUES (?, ?, ?)').run(
+  cachePrepare('INSERT OR REPLACE INTO yt_cache (key, json, expires_at) VALUES (?, ?, ?)').run(
     cacheKey,
     JSON.stringify({ streamUrl, expiresAt, durationSec }),
     expiresAt

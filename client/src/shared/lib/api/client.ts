@@ -23,10 +23,10 @@ export async function apiFetch<T>(
   init: RequestInit = {},
   sessionId: string
 ): Promise<T> {
-  const headers = {
+  const headers: Record<string, string> = {
     ...authHeaders(sessionId),
-    'Content-Type': init.body instanceof FormData ? undefined : 'application/json',
-    ...(init.headers || {}),
+    ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+    ...((init.headers as Record<string, string>) || {}),
   };
   const resp = await fetch(endpoint, { ...init, headers });
   if (!resp.ok) {

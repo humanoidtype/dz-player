@@ -3,14 +3,14 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import { useAuthStore } from '../../auth/model/authStore';
 import { usePlayerStore } from '../../player/model/playerStore';
-import { Media } from '../../entities/media';
-import { formatTime } from '../../shared/lib/formatTime';
-import { SeekBar } from '../../shared/ui/SeekBar';
+import { Media } from '../../../entities/media';
+import { formatTime } from '../../../shared/lib/formatTime';
+import { SeekBar } from './SeekBar';
 
 export const PlayerPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { sessionId } = useAuthStore.getState();
-  const { play, pause, seek, setQueue, currentIndex } = usePlayerStore.getState();
+  const { play, pause, seek, setQueue } = usePlayerStore.getState();
 
   return (
     <div className="min-h-screen bg-bg flex flex-col">

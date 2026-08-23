@@ -1,7 +1,8 @@
 import { config } from '../config.js';
+import type { Innertube } from 'youtubei.js';
 
 /** Minimal youtubei.js client interface. */
-interface YtText { text?: string; };
+interface YtText { text?: string; }
 interface YtVideoLike {
   id?: string; videoId?: string;
   title?: string | YtText;
@@ -22,16 +23,16 @@ type InnertubeMethods = {
   getPlaylist(id: string): Promise<{ items: YtVideoLike[]; count: number }>;
 };
 
-export async function createClient(cookieHeader?: string) {
+export async function createClient(cookieHeader?: string): Promise<Innertube> {
   const mod = await import('youtubei.js');
-  const Innertube = mod.Innertube;
-  return new Innertube({ cookie: cookieHeader });
+  const opts = cookieHeader ? { cookie: cookieHeader } : {};
+  return new (mod.Innertube as unknown as new (o?: Record<string, unknown>) => Innertube)(opts);
 }
 
-export async function extractVideos(raw: unknown): YtVideoLike[] {
+export function extractVideos(raw: unknown): YtVideoLike[] {
   // Defensive: handle many youtubei.js response shapes
   if (!raw) return [];
-  if (Array.isArray(raw)) return raw.map(extractVideos)[0];
+  if (Array.isArray(raw)) return raw.filter((x): x is YtVideoLike => !!x && typeof x === 'object');
   // Most common: .videos array or .content or .contents
   if (typeof raw === 'object') {
     const r = raw as Record<string, unknown>;
@@ -57,7 +58,14 @@ export function toMediaDto(v: YtVideoLike): {
 } {
   const vid = v.id || v.videoId || '';
   const title = (typeof v.title === 'string' ? v.title : v.title?.text || 'Unknown Title').trim() || 'Unknown';
-  const artistName = typeof v.author === 'string' ? v.author : (v.author?.name || v.channel || 'Unknown Channel').trim() || 'Unknown';
+  let artistRaw: string | undefined;
+  if (typeof v.author === 'string') artistRaw = v.author;
+  else if (v.author) {
+    const a = v.author as { name?: string; text?: string };
+    artistRaw = a.name || a.text;
+  }
+  artistRaw = artistRaw || v.channel || 'Unknown Channel';
+  const artistName = artistRaw.trim() || 'Unknown';
   const thumb = v.thumbnails?.[0]?.url
     || `https://i.ytimg.com/vi/${vid.replace('vid_','')}/hqdefault.jpg`;
   const duration = typeof v.duration === 'number' ? v.duration : (typeof v.duration?.seconds === 'number' ? v.duration.seconds : undefined);
@@ -96,5 +104,3 @@ function parseCount(text: string): number | undefined {
   if (upper.includes('B')) return Math.round(num * 1_000_000_000);
   return Math.round(num);
 }
-
-export { createClient, extractVideos, toMediaDto };

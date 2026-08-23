@@ -1,6 +1,6 @@
 // client/src/features/player/engine/playerEngine.ts
-import { useStore } from '../model/playerStore';
-import { Media } from '../../entities/media';
+import { usePlayerStore } from '../model/playerStore';
+import { Media } from '../../../entities/media';
 
 export async function resolveStreamUrl(media: Media): Promise<string> {
   const now = Date.now();
@@ -11,8 +11,8 @@ export async function resolveStreamUrl(media: Media): Promise<string> {
 }
 
 export function usePlayerEngine(media: Media) {
-  const { play, pause, seek, setPosition } = useStore.getState();
-  const { toggleShuffle, toggleLoop, next, prev, removeFromQueue, setQueue } = useStore.getState();
+  const { play, pause, seek, setPosition } = usePlayerStore.getState();
+  const { toggleShuffle, toggleLoop, next, prev, removeFromQueue, setQueue } = usePlayerStore.getState();
 
   const handlePlay = async () => {
     const streamUrl = await resolveStreamUrl(media);

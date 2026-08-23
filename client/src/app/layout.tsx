@@ -1,13 +1,13 @@
 // client/src/app/layout.tsx
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuthStore } from '../../features/auth/model/authStore';
-import { usePlayerStore } from '../../features/player/model/playerStore';
-import { SidebarDrawer } from '../../features/sidebar/ui/SidebarDrawer';
-import { SearchOverlay } from '../../features/search/ui/SearchOverlay';
-import type { Media } from '../../entities/media';
+import { useAuthStore } from '../features/auth/model/authStore';
+import { usePlayerStore } from '../features/player/model/playerStore';
+import { SidebarDrawer } from '../features/sidebar/ui/SidebarDrawer';
+import { SearchOverlay } from '../features/search/ui/SearchOverlay';
+import type { Media } from '../entities/media';
 
-export const Layout: React.FC = () => {
+export const Layout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { sessionId, isLoggedIn } = useAuthStore.getState();

@@ -1,6 +1,6 @@
 // client/src/features/dashboard/ui/MediaCard.tsx
 import React from 'react';
-import type { Media } from '../../../../entities/media';
+import type { Media } from '../../../entities/media';
 
 export interface MediaCardProps {
   media: Media;

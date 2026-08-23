@@ -1,7 +1,6 @@
 // client/src/features/player/model/playerStore.ts
-import create from 'zustand/middleware';
-import type { Media, QueueState, LoopMode } from '../../entities/media';
-import { formatTime } from '../../shared/lib/formatTime';
+import { create } from 'zustand';
+import type { Media, QueueState, LoopMode } from '../../../entities/media';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 export interface PlayerStore {
@@ -13,6 +12,7 @@ export interface PlayerStore {
   volume: number;
   muted: boolean;
   setQueue: (list: Media[], idx?: number) => void;
+  addToQueue: (list: Media[]) => void;
   play: () => void;
   pause: () => void;
   seek: (sec: number) => void;
@@ -29,7 +29,7 @@ export interface PlayerStore {
   removeFromQueue: (idx: number) => void;
 }
 
-export const usePlayerStore = create<PlayerStore>(
+export const usePlayerStore = create<PlayerStore>()(
   persist(
     (set, get) => ({
       queue: {
@@ -49,6 +49,12 @@ export const usePlayerStore = create<PlayerStore>(
         const index = idx !== undefined ? idx : 0;
         set({ queue: { list, currentIndex: index, shuffle: false, loop: 'none', originalList: list.slice() } });
       },
+      addToQueue: (list: Media[]) => {
+        const { queue } = get();
+        const existing = new Set(queue.list.map((m) => m.id));
+        const merged = [...queue.list, ...list.filter((m) => !existing.has(m.id))];
+        set({ queue: { ...queue, list: merged, originalList: merged.slice() } });
+      },
       play: () => set({ isPlaying: true }),
       pause: () => set({ isPlaying: false }),
       seek: (sec: number) => set({ positionSec: sec }),
@@ -56,7 +62,7 @@ export const usePlayerStore = create<PlayerStore>(
       setExpanded: (expanded: boolean) => set({ isExpanded: expanded }),
       setPosition: (sec: number) => set({ positionSec: sec }),
       setVolume: (vol: number) => set({ volume: Math.max(0, Math.min(1, vol)) }),
-      toggleMute: () => set({ muted: !muted }),
+      toggleMute: () => set({ muted: !get().muted }),
       next: () => {
         const { queue, currentMedia } = get();
         if (queue.list.length === 0) return;
@@ -99,18 +105,7 @@ export const usePlayerStore = create<PlayerStore>(
     }),
     {
       name: 'player-store',
-      storage: {
-        getItem: (name: string) => {
-          if (typeof window !== 'undefined') return localStorage.getItem(name);
-          return null;
-        },
-        setItem: (name: string, value: string) => {
-          if (typeof window !== 'undefined') localStorage.setItem(name, value);
-        },
-        removeItem: (name: string) => {
-          if (typeof window !== 'undefined') localStorage.removeItem(name);
-        },
-      },
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

@@ -1,6 +1,7 @@
-import { config, DATA_DIR } from '../config.js';
+import { Request, Response } from 'express';
+import { randomUUID } from 'node:crypto';
 import { authDb } from '../db/index.js';
-import { encryptCookies, decryptCookies } from '../services/cookieManager.js';
+import { encryptCookies } from '../services/cookieManager.js';
 
 export async function googleAuthRoute(req: Request, res: Response) {
   const { idToken, accessToken } = req.body as { idToken: string; accessToken: string };
@@ -17,7 +18,7 @@ export async function googleAuthRoute(req: Request, res: Response) {
   }
 
   // Create session
-  const sessionId = require('crypto').randomUUID();
+  const sessionId = randomUUID();
   const userId = payload.sub;
   const email = payload.email;
   const name = payload.name;
@@ -48,7 +49,9 @@ export async function meRoute(req: Request, res: Response) {
   const sessionId = req.sessionId || (req.body?.sessionId as string);
   if (!sessionId) return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'No session' } });
 
-  const session = authDb.prepare('SELECT * FROM session WHERE id = ?').get(sessionId);
+  const session = authDb.prepare('SELECT * FROM session WHERE id = ?').get(sessionId) as
+    | { id: string; user_id: string }
+    | undefined;
   if (!session) return res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'Session not found' } });
 
   // Cookie tidak pernah di-expose; return user + sessionId

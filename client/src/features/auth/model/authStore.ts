@@ -1,7 +1,7 @@
 // client/src/features/auth/model/authStore.ts
-import create from 'zustand/middleware';
-import type { User } from '../../entities/media';
-import { persist } from 'zustand/middleware';
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+import type { User } from '../../../entities/media';
 
 export interface AuthStore {
   user: User | null;
@@ -13,7 +13,7 @@ export interface AuthStore {
   refresh: () => Promise<void>;
 }
 
-export const useAuthStore = create(
+export const useAuthStore = create<AuthStore>()(
   persist(
     (set, get) => ({
       user: null,
@@ -52,18 +52,7 @@ export const useAuthStore = create(
     }),
     {
       name: 'auth-store',
-      storage: {
-        getItem: (name: string) => {
-          if (typeof window !== 'undefined') return localStorage.getItem(name);
-          return null;
-        },
-        setItem: (name: string, value: string) => {
-          if (typeof window !== 'undefined') localStorage.setItem(name, value);
-        },
-        removeItem: (name: string) => {
-          if (typeof window !== 'undefined') localStorage.removeItem(name);
-        },
-      },
+      storage: createJSONStorage(() => localStorage),
     }
   )
 );

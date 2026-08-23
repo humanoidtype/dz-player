@@ -13,7 +13,7 @@ export const TabBar: React.FC<TabBarProps> = ({
   activeTab,
   onTabChange,
 }) => {
-  const tabs = [
+  const tabs: { key: TabBarProps['activeTab']; label: string }[] = [
     { key: 'dashboard', label: 'DASHBOARD' },
     { key: 'history', label: 'HISTORY' },
     { key: 'trending', label: 'TRENDING' },

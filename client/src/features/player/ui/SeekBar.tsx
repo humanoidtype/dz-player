@@ -1,6 +1,6 @@
 // client/src/features/player/ui/SeekBar.tsx
 import React from 'react';
-import { formatTime } from '../../shared/lib/formatTime';
+import { formatTime } from '../../../shared/lib/formatTime';
 
 export interface SeekBarProps {
   duration: number;

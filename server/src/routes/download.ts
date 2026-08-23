@@ -17,7 +17,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { quality } = req.body as { quality: string };
+  const { quality } = req.body as { quality: '360p' | '720p' | '1080p' | 'audio' };
   try {
     const { streamUrl, expiresAt, durationSec } = await resolveStreamUrl(id, quality);
     res.json({ id, streamUrl, expiresAt, durationSec });

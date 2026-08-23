@@ -1,6 +1,6 @@
 // client/src/features/sidebar/ui/SidebarDrawer.tsx
 import React, { useState } from 'react';
-import { Button } from '../../shared/ui/Button';
+import { Button } from '../../../shared/ui/Button';
 
 export interface SidebarDrawerProps {
   isOpen: boolean;

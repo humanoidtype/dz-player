@@ -7,6 +7,7 @@ export interface ButtonProps {
   disabled?: boolean;
   className?: string;
   as?: 'button' | 'a' | 'div';
+  type?: 'button' | 'submit' | 'reset';
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -15,6 +16,7 @@ export const Button: React.FC<ButtonProps> = ({
   disabled,
   className,
   as = 'button',
+  type = 'button',
 }) => {
   const commonClasses = `
     inline-flex items-center justify-center rounded-md text-sm font-medium
@@ -27,6 +29,7 @@ export const Button: React.FC<ButtonProps> = ({
       <button
         onClick={onClick}
         disabled={disabled}
+        type={type}
         className={`${commonClasses}${className || ''}`}
       >
         {children}

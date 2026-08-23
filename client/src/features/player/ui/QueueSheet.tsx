@@ -1,8 +1,8 @@
 // client/src/features/player/ui/QueueSheet.tsx
 import React from 'react';
-import { Media } from '../../entities/media';
+import { Media } from '../../../entities/media';
 import { usePlayerStore } from '../../player/model/playerStore';
-import { formatTime } from '../../shared/lib/formatTime';
+import { formatTime } from '../../../shared/lib/formatTime';
 
 export interface QueueSheetProps {
   visible: boolean;

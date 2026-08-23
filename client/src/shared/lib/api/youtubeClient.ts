@@ -1,13 +1,14 @@
 // client/src/shared/lib/api/youtubeClient.ts
 import { apiFetch } from './client';
+import type { Media } from '../../../entities/media';
 
 export const youtubeClient = {
-  trending: (tab: string = 'dashboard', page: number = 1) => {
-    return apiFetch(
+  trending: (tab: string = 'dashboard', page: number = 1): Promise<Media[]> => {
+    return apiFetch<{ data: Media[] }>(
       `/api/youtube/trending?tab=${tab}&page=${page}`,
       {},
       'PLACEHOLDER_SESSION_ID'
-    ).then((r: any) => r.data);
+    ).then((r) => r.data);
   },
 
   search: (q: string) => {
@@ -36,7 +37,8 @@ export const youtubeClient = {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ quality }),
-      }
+      },
+      'PLACEHOLDER_SESSION_ID'
     ).then((r: any) => r);
   },
 

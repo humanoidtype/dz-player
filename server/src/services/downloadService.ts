@@ -1,10 +1,5 @@
-import { config } from '../config.js';
-import Database from 'better-sqlite3';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { encryptCookies, decryptCookies } from './cookieManager.js';
-
-const cacheDb = new Database('server/data/cache.db');
 
 const exec = promisify(execFile);
 

@@ -1,4 +1,4 @@
-import sqlite from 'node:sqlite';
+import Database from 'better-sqlite3';
 import { mkdirSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import { config } from '../config.js';
@@ -9,7 +9,7 @@ if (!existsSync(DATA_DIR)) {
 }
 
 // authDb: user + session tables
-export const authDb = new sqlite.DatabaseSync(path.join(DATA_DIR, 'auth.db'));
+export const authDb = new Database(path.join(DATA_DIR, 'auth.db'));
 authDb.exec(`
   CREATE TABLE IF NOT EXISTS user (
     id TEXT PRIMARY KEY,
@@ -31,14 +31,14 @@ authDb.exec(`
 `);
 
 // cacheDb: yt-dlp stream URL cache TTL ~5h
-export const cacheDb = new sqlite.DatabaseSync(path.join(DATA_DIR, 'cache.db'));
+export const cacheDb = new Database(path.join(DATA_DIR, 'cache.db'));
 cacheDb.exec(`
   CREATE TABLE IF NOT EXISTS yt_cache (
     key TEXT PRIMARY KEY,
     json TEXT NOT NULL,
     expires_at INTEGER NOT NULL
   );
-  CREATE INDEX IF NOT EXISTS idx_yt_cache_expires ON cache_db(expires_at);
+  CREATE INDEX IF NOT EXISTS idx_yt_cache_expires ON yt_cache(expires_at);
 `);
 
 // Convenience: prep + all / get
