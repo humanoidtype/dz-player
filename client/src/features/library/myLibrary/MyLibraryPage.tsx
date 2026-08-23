@@ -1,26 +1,42 @@
 // client/src/features/library/myLibrary/MyLibraryPage.tsx
-import React from 'react';
-import { useAuthStore } from '../../auth/model/authStore';
+import React, { useEffect, useState } from 'react';
+import { db } from '../../../shared/db/db';
 
 export const MyLibraryPage: React.FC = () => {
-  const { sessionId } = useAuthStore.getState();
+  const [stats, setStats] = useState({ history: 0, downloads: 0, playlists: 0 });
+
+  useEffect(() => {
+    void (async () => {
+      setStats({
+        history: await db.history.count(),
+        downloads: await db.download.count(),
+        playlists: await db.playlist.count(),
+      });
+    })();
+  }, []);
 
   return (
-    <div className="p-4 bg-card rounded-lg min-h-screen">
+    <div className="p-4">
       <h2 className="text-text-primary mb-4">My Library</h2>
-      {sessionId ? (
-        <>
-          <p className="text-text-secondary">
-            Profile: <span className="font-medium">User Name</span> (tap untuk playlist YouTube)
-          </p>
-          <p className="text-text-tertiary">(read-only, Phase 1)</p>
-        </>
-      ) : (
-        <div className="empty-state text-center py-8">
-          <p className="text-text-secondary mb-2">Belum login</p>
-          <button className="btn-primary">Login with Google</button>
+
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-card rounded-lg p-4 text-center">
+          <p className="text-text-primary text-xl font-semibold">{stats.history}</p>
+          <p className="text-text-secondary text-xs">Riwayat</p>
         </div>
-      )}
+        <div className="bg-card rounded-lg p-4 text-center">
+          <p className="text-text-primary text-xl font-semibold">{stats.downloads}</p>
+          <p className="text-text-secondary text-xs">Download</p>
+        </div>
+        <div className="bg-card rounded-lg p-4 text-center">
+          <p className="text-text-primary text-xl font-semibold">{stats.playlists}</p>
+          <p className="text-text-secondary text-xs">Playlist</p>
+        </div>
+      </div>
+
+      <p className="text-text-tertiary text-sm">
+        Playlist YouTube & sinkronisasi akun akan aktif setelah login Google dikonfigurasi.
+      </p>
     </div>
   );
 };

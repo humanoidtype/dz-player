@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { extractVideos, toMediaDto, createClient } from '../services/youtubeService.js';
+import { resolveStreamUrl } from '../services/ytdlpService.js';
 
 export async function trendingRoute(req: Request, res: Response) {
   const tab = req.query.tab as string || 'dashboard';
@@ -71,10 +72,15 @@ export async function suggestRoute(req: Request, res: Response) {
 
 export async function streamRoute(req: Request, res: Response) {
   const { id } = req.params;
-  const body = req.body as { quality?: string };
-  const quality = body?.quality || 'auto';
+  const body = (req.body || {}) as { quality?: string };
+  const quality = (body.quality === 'audio' || body.quality === '360p' || body.quality === '1080p'
+    ? body.quality
+    : '720p') as '360p' | '720p' | '1080p' | 'audio';
 
-  // youtubei.js doesn't directly resolve stream URL; use yt-dlp via our wrapper
-  // For now, return error placeholder; real impl needs yt-dlp subprocess from vid
-  return res.status(501).json({ error: { code: 'NOT_IMPLEMENTED', message: 'Stream resolution requires yt-dlp; use /api/youtube/stream via POST with media id' } });
+  try {
+    const result = await resolveStreamUrl(id.replace(/^vid_/, ''), quality);
+    return res.json({ data: { id, ...result } });
+  } catch (e) {
+    return res.status(503).json({ error: { code: 'STREAM_ERROR', message: (e as Error).message } });
+  }
 }

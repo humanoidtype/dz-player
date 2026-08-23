@@ -1,5 +1,4 @@
-// shared lib api client - fetch wrapper + TanStack Query setup
-import { useQueryClient } from '@tanstack/react-query';
+// shared lib api client - fetch wrapper + TanStack Query keys
 
 // Authorization header factory — client hanya pegang sessionId (di SecureStorage)
 export function authHeaders(sessionId: string) {

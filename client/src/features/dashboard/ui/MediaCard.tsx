@@ -33,7 +33,10 @@ export const MediaCard: React.FC<MediaCardProps> = ({
       </div>
       {onMore && (
         <button
-          onClick={onMore}
+          onClick={(e) => {
+            e.stopPropagation();
+            onMore();
+          }}
           className="absolute top-1 right-1 p-1 rounded-full bg-card-pressed opacity-60 hover:bg-card-pressed/90 transition-colors"
           aria-label="More actions"
         >

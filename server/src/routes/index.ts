@@ -1,8 +1,9 @@
-import { Router, Request, Response } from 'express';
+import { Router } from 'express';
 import { googleAuthRoute, meRoute, logoutRoute } from './auth.js';
 import { trendingRoute, searchRoute, suggestRoute } from './youtube.js';
 import { streamRoute } from './youtube.js';
 import { authMiddleware } from '../middleware/auth.js';
+import downloadRouter from './download.js';
 
 const router = Router();
 
@@ -19,11 +20,6 @@ router.get('/youtube/suggest', suggestRoute);
 router.post('/youtube/stream/:id', streamRoute);
 
 // Download routes (auth required)
-router.get('/download/:id', async (req: Request, res: Response) => {
-  const { id } = req.params;
-  // Stream file via yt-dlp or redirect to Capacitor Filesystem download URL
-  res.set('Content-Disposition', `attachment; filename="video_${id}.mp4"`);
-  res.send('Download endpoint - proxy yt-dlp stream');
-});
+router.use('/download', downloadRouter);
 
 export default router;

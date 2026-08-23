@@ -1,4 +1,3 @@
-import { config } from '../config.js';
 import { cachePrepare } from '../db/index.js';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';

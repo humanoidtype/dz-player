@@ -4,7 +4,7 @@ import { authDb } from '../db/index.js';
 import { encryptCookies } from '../services/cookieManager.js';
 
 export async function googleAuthRoute(req: Request, res: Response) {
-  const { idToken, accessToken } = req.body as { idToken: string; accessToken: string };
+  const { idToken, accessToken: _accessToken } = req.body as { idToken: string; accessToken: string };
   if (!idToken) return res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'idToken required' } });
 
   // Validate Google ID token via public keys (fetch from Google)
@@ -33,7 +33,7 @@ export async function googleAuthRoute(req: Request, res: Response) {
   const initCookies: Record<string, string> = {};
   const cookiesEncrypted = encryptCookies(initCookies);
 
-  const session = authDb.prepare(
+  authDb.prepare(
     'INSERT OR REPLACE INTO session (id, user_id, id_token, refresh_token, cookies_encrypted, expires_at, created_at) VALUES (?,?,?,?,?,?,?)'
   ).run(
     sessionId, userId, idToken, undefined, cookiesEncrypted,

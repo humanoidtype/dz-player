@@ -1,52 +1,76 @@
 // client/src/shared/lib/api/youtubeClient.ts
 import { apiFetch } from './client';
 import type { Media } from '../../../entities/media';
+import { useAuthStore } from '../../../features/auth/model/authStore';
+
+const sessionId = (): string => useAuthStore.getState().sessionId ?? 'GUEST';
+
+export interface TrendingResponse {
+  data: Media[];
+  nextPage?: number;
+  hasMore?: boolean;
+}
 
 export const youtubeClient = {
-  trending: (tab: string = 'dashboard', page: number = 1): Promise<Media[]> => {
-    return apiFetch<{ data: Media[] }>(
+  trending: (tab: string = 'dashboard', page: number = 1): Promise<TrendingResponse> => {
+    return apiFetch<TrendingResponse>(
       `/api/youtube/trending?tab=${tab}&page=${page}`,
       {},
-      'PLACEHOLDER_SESSION_ID'
-    ).then((r) => r.data);
+      sessionId()
+    );
   },
 
-  search: (q: string) => {
-    return apiFetch(
+  search: async (q: string): Promise<Media[]> => {
+    const resp = await apiFetch<{ data: Media[] }>(
       `/api/youtube/search?q=${encodeURIComponent(q)}`,
       {},
-      'PLACEHOLDER_SESSION_ID'
-    ).then((r: any) => r.data);
+      sessionId()
+    );
+    return resp.data;
   },
 
-  suggest: (q: string) => {
-    return apiFetch(
+  suggest: async (q: string): Promise<string[]> => {
+    const resp = await apiFetch<unknown>(
       `/api/youtube/suggest?q=${encodeURIComponent(q)}`,
       {},
-      'PLACEHOLDER_SESSION_ID'
-    ).then((r: any) => r.suggestions);
+      sessionId()
+    );
+    if (Array.isArray(resp)) return resp as string[];
+    return (resp as { suggestions?: string[] }).suggestions ?? [];
   },
 
-  stream: (id: string, quality: string) => {
-    return apiFetch(
+  stream: async (id: string, quality: string = '720p'): Promise<{ streamUrl: string; expiresAt?: number; durationSec?: number }> => {
+    const resp = await apiFetch<{ data: { streamUrl: string; expiresAt?: number; durationSec?: number } }>(
       `/api/youtube/stream/${id}`,
       {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer PLACEHOLDER_SESSION_ID`,
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ quality }),
       },
-      'PLACEHOLDER_SESSION_ID'
-    ).then((r: any) => r);
+      sessionId()
+    );
+    return resp.data;
   },
 
-  playlists: () => {
-    return apiFetch(
-      '/api/youtube/playlist',
+  startDownload: async (id: string, quality: string = '720p'): Promise<{ id: string; filePath: string; status: string }> => {
+    const resp = await apiFetch<{ data: { id: string; filePath: string; status: string } }>(
+      `/api/download/${id}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quality }),
+      },
+      sessionId()
+    );
+    return resp.data;
+  },
+
+  downloadStatus: async (id: string): Promise<{ id: string; status: string }> => {
+    const resp = await apiFetch<{ data: { id: string; status: string } }>(
+      `/api/download/${id}/status`,
       {},
-      'PLACEHOLDER_SESSION_ID'
-    ).then((r: any) => r.playlists);
+      sessionId()
+    );
+    return resp.data;
   },
 };

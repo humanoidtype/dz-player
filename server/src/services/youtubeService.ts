@@ -1,4 +1,3 @@
-import { config } from '../config.js';
 import type { Innertube } from 'youtubei.js';
 
 /** Minimal youtubei.js client interface. */
@@ -14,14 +13,6 @@ interface YtVideoLike {
   published?: YtText;
   thumbnails?: { url?: string }[];
 }
-
-type InnertubeMethods = {
-  search(q: string): Promise<{ videos: YtVideoLike[] }>;
-  getSearchSuggestions(q: string): Promise<{ suggestions: string[] }>;
-  getHomeFeed(): Promise<{ videos: YtVideoLike[] }>;
-  getTrending(): Promise<{ videos: YtVideoLike[] }>;
-  getPlaylist(id: string): Promise<{ items: YtVideoLike[]; count: number }>;
-};
 
 export async function createClient(cookieHeader?: string): Promise<Innertube> {
   const mod = await import('youtubei.js');

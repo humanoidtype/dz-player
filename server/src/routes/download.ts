@@ -1,28 +1,32 @@
-import { config } from '../config.js';
-import { resolveStreamUrl } from '../services/ytdlpService.js';
 import { Router, Request, Response } from 'express';
+import { startDownload, getDownloadStatus } from '../services/downloadService.js';
 
 const router = Router();
 
-router.get('/', async (req: Request, res: Response) => {
+type Quality = '360p' | '720p' | '1080p' | 'audio';
+
+function toQuality(q: unknown): Quality {
+  return q === 'audio' || q === '360p' || q === '1080p' ? (q as Quality) : '720p';
+}
+
+router.post('/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { quality } = req.query as { quality?: string };
+  const body = (req.body || {}) as { quality?: string; downloadPath?: string };
+  const downloadPath = body.downloadPath || 'server/data/downloads';
   try {
-    const { streamUrl, expiresAt, durationSec } = await resolveStreamUrl(id, quality as '360p' | '720p' | '1080p' | 'audio');
-    res.json({ id, streamUrl, expiresAt, durationSec });
+    const filePath = await startDownload(id, toQuality(body.quality), downloadPath);
+    res.json({ data: { id, filePath, status: 'completed' } });
   } catch (e) {
-    res.status(500).json({ error: { code: 'STREAM_ERROR', message: (e as Error).message } });
+    res.status(500).json({ error: { code: 'DOWNLOAD_ERROR', message: (e as Error).message } });
   }
 });
 
-router.post('/', async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { quality } = req.body as { quality: '360p' | '720p' | '1080p' | 'audio' };
+router.get('/:id/status', async (req: Request, res: Response) => {
   try {
-    const { streamUrl, expiresAt, durationSec } = await resolveStreamUrl(id, quality);
-    res.json({ id, streamUrl, expiresAt, durationSec });
+    const status = await getDownloadStatus(req.params.id);
+    res.json({ data: { id: req.params.id, status } });
   } catch (e) {
-    res.status(500).json({ error: { code: 'STREAM_ERROR', message: (e as Error).message } });
+    res.status(500).json({ error: { code: 'DOWNLOAD_ERROR', message: (e as Error).message } });
   }
 });
 
