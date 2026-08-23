@@ -7,7 +7,6 @@ build/
 !.env.example
 server/data/*.db
 server/data/*.db-journal
-android/
 ios/
 .DS_Store
 *.log
