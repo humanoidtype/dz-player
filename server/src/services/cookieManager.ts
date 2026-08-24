@@ -1,3 +1,4 @@
+// server/src/services/cookieManager.ts
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
 import { config } from '../config.js';
 
@@ -31,4 +32,34 @@ export function decryptCookies(payload: string): Record<string, string> {
   decipher.setAuthTag(Buffer.from(tagB64, 'base64'));
   const dec = Buffer.concat([decipher.update(Buffer.from(dataB64, 'base64')), decipher.final()]);
   return JSON.parse(dec.toString('utf8')) as Record<string, string>;
+}
+
+// Terima format Netscape txt ATAU header string "k=v; k2=v2"
+export function parseCookiesInput(raw: string): Record<string, string> | null {
+  const input = raw.trim();
+  if (!input) return null;
+
+  const cookies: Record<string, string> = {};
+
+  if (input.includes('\t')) {
+    // Netscape: domain \t flag \t path \t secure \t expiry \t name \t value
+    for (const line of input.split('\n')) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const fields = trimmed.split('\t');
+      if (fields.length < 7) continue;
+      const [name, value] = [fields[5], fields[6]];
+      if (name && value !== undefined) cookies[name] = value;
+    }
+  } else {
+    for (const part of input.split(';')) {
+      const trimmed = part.trim();
+      if (!trimmed) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx <= 0) continue;
+      cookies[trimmed.slice(0, idx)] = trimmed.slice(idx + 1);
+    }
+  }
+
+  return Object.keys(cookies).length > 0 ? cookies : null;
 }

@@ -10,6 +10,9 @@ dotenv.config();
 
 const app = express();
 
+// Behind nginx: percaya 1 hop proxy agar express-rate-limit baca IP asli
+app.set('trust proxy', 1);
+
 // Security middleware
 app.use(helmet());
 app.use(cors({ origin: config.corsOrigins }));

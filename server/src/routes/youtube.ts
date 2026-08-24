@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
-import { extractVideos, toMediaDto, createClient } from '../services/youtubeService.js';
+import { extractVideos, toMediaDto } from '../services/youtubeService.js';
+import { createClientForRequest } from '../services/sessionClient.js';
+import { authDb } from '../db/index.js';
+import { encryptCookies, parseCookiesInput } from '../services/cookieManager.js';
 import { resolveStreamUrl } from '../services/ytdlpService.js';
 
 export async function trendingRoute(req: Request, res: Response) {
   const tab = req.query.tab as string || 'dashboard';
   let yt;
   try {
-    yt = await createClient(); // guest (no cookie)
+    yt = await createClientForRequest(req);
   } catch (e) {
     return res.status(503).json({ error: { code: 'BOT_DETECTED', message: 'youtubei.js init failed' } });
   }
@@ -31,7 +34,7 @@ export async function searchRoute(req: Request, res: Response) {
 
   let yt;
   try {
-    yt = await createClient();
+    yt = await createClientForRequest(req);
   } catch (e) {
     return res.status(503).json({ error: { code: 'BOT_DETECTED', message: 'youtubei.js init failed' } });
   }
@@ -54,7 +57,7 @@ export async function suggestRoute(req: Request, res: Response) {
 
   let yt;
   try {
-    yt = await createClient();
+    yt = await createClientForRequest(req);
   } catch (e) {
     return res.status(503).json({ error: { code: 'BOT_DETECTED', message: 'youtubei.js init failed' } });
   }
@@ -83,4 +86,21 @@ export async function streamRoute(req: Request, res: Response) {
   } catch (e) {
     return res.status(503).json({ error: { code: 'STREAM_ERROR', message: (e as Error).message } });
   }
+}
+export async function saveCookiesRoute(req: Request, res: Response) {
+  const raw = typeof req.body?.raw === 'string' ? req.body.raw : '';
+  const parsed = parseCookiesInput(raw);
+  if (!parsed) {
+    return res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'Cookie kosong atau format tidak dikenali' } });
+  }
+  const hasSessionCookie = 'SID' in parsed || 'SAPISID' in parsed || '__Secure-1PSID' in parsed || '__Secure-3PSID' in parsed;
+  if (!hasSessionCookie) {
+    return res.status(400).json({ error: { code: 'BAD_REQUEST', message: 'Butuh minimal SID/SAPISID dari youtube.com' } });
+  }
+
+  authDb.prepare('UPDATE session SET cookies_encrypted = ? WHERE id = ?').run(
+    encryptCookies(parsed),
+    req.sessionId ?? ''
+  );
+  res.json({ ok: true, count: Object.keys(parsed).length });
 }

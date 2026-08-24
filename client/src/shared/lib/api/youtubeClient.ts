@@ -73,4 +73,17 @@ export const youtubeClient = {
     );
     return resp.data;
   },
+
+  // Import cookies YouTube (Netscape txt atau header "k=v; ...") ke sesi aktif
+  saveYoutubeCookies: async (raw: string): Promise<{ ok: boolean; count: number }> => {
+    return apiFetch<{ ok: boolean; count: number }>(
+      '/api/youtube/cookies',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ raw }),
+      },
+      sessionId()
+    );
+  },
 };

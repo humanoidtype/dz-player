@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { googleAuthRoute, meRoute, logoutRoute } from './auth.js';
-import { trendingRoute, searchRoute, suggestRoute } from './youtube.js';
-import { streamRoute } from './youtube.js';
+import { trendingRoute, searchRoute, suggestRoute, streamRoute, saveCookiesRoute } from './youtube.js';
 import { authMiddleware } from '../middleware/auth.js';
 import downloadRouter from './download.js';
 
@@ -18,6 +17,7 @@ router.get('/youtube/trending', trendingRoute);
 router.get('/youtube/search', searchRoute);
 router.get('/youtube/suggest', suggestRoute);
 router.post('/youtube/stream/:id', streamRoute);
+router.post('/youtube/cookies', saveCookiesRoute);
 
 // Download routes (auth required)
 router.use('/download', downloadRouter);

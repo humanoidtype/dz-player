@@ -1,8 +1,9 @@
 // client/src/features/sidebar/ui/SidebarDrawer.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '../../../shared/ui/Button';
 import { useAuthStore } from '../../auth/model/authStore';
+import { LoginPrompt } from '../../auth/ui/LoginPrompt';
+import { youtubeClient } from '../../../shared/lib/api/youtubeClient';
 
 export interface SidebarDrawerProps {
   isOpen: boolean;
@@ -28,8 +29,24 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({ isOpen, onClose })
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const isLoggedIn = useAuthStore((s) => s.sessionId !== null);
+  const logout = useAuthStore((s) => s.logout);
+
+  const [showCookies, setShowCookies] = useState(false);
+  const [cookieRaw, setCookieRaw] = useState('');
+  const [cookieMsg, setCookieMsg] = useState('');
 
   if (!isOpen) return null;
+
+  const saveCookies = async () => {
+    setCookieMsg('Menyimpan…');
+    try {
+      const resp = await youtubeClient.saveYoutubeCookies(cookieRaw.trim());
+      setCookieMsg(`Tersimpan (${resp.count} cookie). Request kini memakai akunmu.`);
+      setCookieRaw('');
+    } catch (e) {
+      setCookieMsg(`Gagal: ${(e as Error).message}`);
+    }
+  };
 
   return (
     <div
@@ -37,29 +54,32 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({ isOpen, onClose })
       onClick={onClose}
     >
       <aside
-        className="w-64 h-full bg-surface rounded-r-2xl shadow-2xl z-50 p-4 flex flex-col"
+        className="w-72 h-full bg-surface rounded-r-2xl shadow-2xl z-50 p-4 flex flex-col overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-2 border-b border-border mb-3">
           {isLoggedIn && user ? (
-            <div>
+            <div className="flex items-center">
               <img
                 src={user.avatarUrl || 'https://ui-avatars.com/api/?name=User&background=121212&color=fff&size=48'}
                 alt="avatar"
                 className="w-12 h-12 rounded-full mr-3"
               />
-              <span className="text-text-primary">{user.name}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-text-primary text-sm truncate">{user.name}</p>
+                <button
+                  onClick={() => {
+                    logout();
+                    onClose();
+                  }}
+                  className="text-caption hover:text-text-secondary"
+                >
+                  Keluar
+                </button>
+              </div>
             </div>
           ) : (
-            <Button
-              onClick={() => {
-                onClose();
-                navigate('/library');
-              }}
-              className="w-full py-2 text-sm mt-1"
-            >
-              Login with Google
-            </Button>
+            <LoginPrompt title="Login untuk melanjutkan jika diblokir YouTube." />
           )}
         </div>
 
@@ -78,6 +98,32 @@ export const SidebarDrawer: React.FC<SidebarDrawerProps> = ({ isOpen, onClose })
             </button>
           ))}
         </nav>
+
+        {isLoggedIn && (
+          <div className="border-t border-border pt-3 mt-3">
+            <button
+              onClick={() => setShowCookies((v) => !v)}
+              className="text-caption mb-1"
+            >
+              {showCookies ? '▾' : '▸'} Cookies YouTube (anti-bot)
+            </button>
+            {showCookies && (
+              <div>
+                <textarea
+                  value={cookieRaw}
+                  onChange={(e) => setCookieRaw(e.target.value)}
+                  placeholder="Tempel cookies.txt Netscape atau header SID=…; SAPISID=…"
+                  rows={4}
+                  className="w-full bg-input rounded-md p-2 text-xs text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+                <button onClick={() => void saveCookies()} className="btn-primary w-full py-2 text-xs mt-1">
+                  Simpan Cookies
+                </button>
+                {cookieMsg && <p className="text-caption mt-1">{cookieMsg}</p>}
+              </div>
+            )}
+          </div>
+        )}
 
         <button onClick={onClose} className="text-text-tertiary text-sm p-2 self-start">
           Tutup
