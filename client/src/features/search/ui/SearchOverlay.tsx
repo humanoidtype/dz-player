@@ -2,6 +2,8 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Media } from '../../../entities/media';
 import { youtubeClient } from '../../../shared/lib/api/youtubeClient';
+import { isBotError } from '../../../shared/lib/api/client';
+import { LoginPrompt } from '../../auth/ui/LoginPrompt';
 import { Button } from '../../../shared/ui/Button';
 import { playMedia } from '../../player/engine/playerEngine';
 
@@ -15,6 +17,7 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [results, setResults] = useState<Media[]>([]);
   const [loading, setLoading] = useState(false);
+  const [botDetected, setBotDetected] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -22,15 +25,18 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
       setQuery('');
       setSuggestions([]);
       setResults([]);
+      setBotDetected(false);
     }
   }, [isOpen]);
 
   const runSearch = useCallback(async (q: string) => {
     setLoading(true);
+    setBotDetected(false);
     try {
       const items = await youtubeClient.search(q);
       setResults(items.slice(0, 12));
-    } catch {
+    } catch (e) {
+      if (isBotError(e)) setBotDetected(true);
       setResults([]);
     } finally {
       setLoading(false);
@@ -131,7 +137,14 @@ export const SearchOverlay: React.FC<SearchOverlayProps> = ({ isOpen, onClose })
           </ul>
         )}
 
-        {!loading && query.trim().length >= 2 && suggestions.length === 0 && results.length === 0 && (
+        {botDetected && (
+          <LoginPrompt onSuccess={() => {
+            setBotDetected(false);
+            if (query.trim().length >= 2) void runSearch(query.trim());
+          }} />
+        )}
+
+        {!loading && !botDetected && query.trim().length >= 2 && suggestions.length === 0 && results.length === 0 && (
           <p className="text-text-secondary text-sm py-4">Tidak ada hasil</p>
         )}
       </div>

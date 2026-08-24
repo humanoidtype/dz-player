@@ -18,6 +18,19 @@ export const queryKeys = {
 }
 
 // Generic fetch wrapper dengan auth headers dan error handling
+export class ApiError extends Error {
+  code: string;
+  constructor(code: string, message?: string) {
+    super(message || code);
+    this.code = code;
+  }
+}
+
+export function isBotError(e: unknown): boolean {
+  if (e instanceof ApiError) return e.code === 'BOT_DETECTED';
+  return (e as Error | undefined)?.message === 'BOT_DETECTED';
+}
+
 export async function apiFetch<T>(
   endpoint: string,
   init: RequestInit = {},
@@ -32,9 +45,8 @@ export async function apiFetch<T>(
   const resp = await fetch(url, { ...init, headers });
   if (!resp.ok) {
     const errData = await resp.json().catch(() => ({}));
-    const code = errData.error?.code || '';
-    if (code === 'BOT_DETECTED') throw new Error('BOT_DETECTED');
-    throw new Error(resp.statusText || 'API error');
+    const code = errData.error?.code || 'API_ERROR';
+    throw new ApiError(code, code === 'BOT_DETECTED' ? 'BOT_DETECTED' : resp.statusText || code);
   }
   return resp.json() as Promise<T>;
 }
