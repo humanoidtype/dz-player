@@ -1,4 +1,5 @@
 // shared lib api client - fetch wrapper + TanStack Query keys
+import { API_BASE_URL } from './config';
 
 // Authorization header factory — client hanya pegang sessionId (di SecureStorage)
 export function authHeaders(sessionId: string) {
@@ -27,7 +28,8 @@ export async function apiFetch<T>(
     ...(init.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
     ...((init.headers as Record<string, string>) || {}),
   };
-  const resp = await fetch(endpoint, { ...init, headers });
+  const url = `${API_BASE_URL}${endpoint}`;
+  const resp = await fetch(url, { ...init, headers });
   if (!resp.ok) {
     const errData = await resp.json().catch(() => ({}));
     const code = errData.error?.code || '';
