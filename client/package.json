@@ -21,6 +21,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.35",
     "@typescript-eslint/eslint-plugin": "^7.18.0",

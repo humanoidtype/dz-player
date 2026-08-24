@@ -1,5 +1,5 @@
-/*globals.css*/
-import "tailwindcss";
+/* globals.css */
+@import "tailwindcss";
 
 @theme {
   --color-bg: #000000;
@@ -11,13 +11,14 @@ import "tailwindcss";
   --color-text-primary: #FFFFFF;
   --color-text-secondary: #B0B0B0;
   --color-text-tertiary: #888888;
+  --color-text-error: #FF5252;
   --color-accent: #9B00FF;
   --color-accent-pressed: #7B00CC;
   --color-border: #2A2A2A;
 }
 
 @media (prefers-color-scheme: light) {
-  @theme {
+  :root {
     --color-bg: #F5F5F5;
     --color-surface: #FFFFFF;
     --color-card: #E8E8E8;
@@ -27,24 +28,38 @@ import "tailwindcss";
     --color-text-primary: #0A0A0A;
     --color-text-secondary: #555555;
     --color-text-tertiary: #777777;
+    --color-text-error: #C62828;
     --color-accent: #7B00CC;
     --color-accent-pressed: #5A0099;
     --color-border: #DDDDDD;
-    --color-scrim: rgba(0,0,0,0.3);
+    --color-scrim: rgba(0, 0, 0, 0.3);
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-full font-medium transition-colors;
+    background-color: var(--color-accent);
+    color: #fff;
+  }
+  .btn-primary:active {
+    background-color: var(--color-accent-pressed);
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-full font-medium transition-colors;
+    background-color: var(--color-card);
+    color: var(--color-text-primary);
+  }
+  .empty-state {
+    @apply text-sm;
+    color: var(--color-text-secondary);
   }
 }
 
 @layer utilities {
-  .bg-bg { background-color: var(--color-bg); }
-  .bg-surface { background-color: var(--color-surface); }
-  .bg-card { background-color: var(--color-card); }
-  .bg-card-pressed { background-color: var(--color-card-pressed); }
-  .bg-input { background-color: var(--color-input); }
-  .bg-mini-player { background-color: var(--color-mini-player); }
-  .text-text-primary { color: var(--color-text-primary); }
-  .text-text-secondary { color: var(--color-text-secondary); }
-  .text-text-tertiary { color: var(--color-text-tertiary); }
-  .bg-accent { background-color: var(--color-accent); }
-  .bg-accent-pressed { background-color: var(--color-accent-pressed); }
-  .border-border { border-color: var(--color-border); }
+  .text-caption {
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    color: var(--color-text-tertiary);
+  }
 }
